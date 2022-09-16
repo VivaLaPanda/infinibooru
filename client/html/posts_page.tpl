@@ -56,4 +56,9 @@
             <%= ctx.makeFlexboxAlign() %>
         </ul>
     <% } %>
+    <div>
+        <h2>
+            <input type="button" value="Make More" class="generate" />
+        </h2>
+    </div>
 </div>

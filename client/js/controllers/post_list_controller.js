@@ -91,6 +91,34 @@ class PostListController {
         e.detail.post.save().catch((error) => window.alert(error.message));
     }
 
+    _evtGenerate(e) {
+        prompt = this._ctx.parameters.query;
+
+        if (prompt != null) {
+            // Make json POST request to 207.178.107.94:21487/generate_image
+            // with the prompt as the prompt query in the json body
+            // The response is a jpeg image
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://207.178.107.94:21487/generate_image", true);
+            xhr.responseType = "blob";
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onload = function (e) {
+                if (this.status == 200) {
+                    // download the image
+                    var blob = this.response;
+                    var link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "image.jpg";
+                    link.click();
+                }
+            }
+            xhr.send(JSON.stringify({ prompt: prompt, num_samples: 1 }));
+
+
+        }
+    }
+
     _syncPageController() {
         this._pageController.run({
             parameters: this._ctx.parameters,
@@ -127,6 +155,9 @@ class PostListController {
                 view.addEventListener("untag", (e) => this._evtUntag(e));
                 view.addEventListener("changeSafety", (e) =>
                     this._evtChangeSafety(e)
+                );
+                view.addEventListener("generate", (e) =>
+                    this._evtGenerate(e)
                 );
                 return view;
             },

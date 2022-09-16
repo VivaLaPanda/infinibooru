@@ -41,6 +41,13 @@ class PostsPageView extends events.EventTarget {
             }
         }
 
+        const generateButton = this._getGenerateNode();
+        if (generateButton) {
+            generateButton.addEventListener("click", (e) =>
+                this._evtGenerateClick(e)
+            );
+        }
+
         this._syncBulkEditorsHighlights();
     }
 
@@ -56,12 +63,21 @@ class PostsPageView extends events.EventTarget {
         return listItemNode.querySelector(".safety-flipper");
     }
 
+    _getGenerateNode() {
+        return this._hostNode.querySelector(".generate");
+    }
+
     _evtPostChange(e) {
         const listItemNode = this._postIdToListItemNode[e.detail.post.id];
         for (let node of listItemNode.querySelectorAll("[data-disabled]")) {
             node.removeAttribute("data-disabled");
         }
         this._syncBulkEditorsHighlights();
+    }
+
+    _evtGenerateClick(e) {
+        e.preventDefault();
+        this.dispatchEvent(new CustomEvent("generate"));
     }
 
     _evtBulkEditTagsClick(e, post) {
