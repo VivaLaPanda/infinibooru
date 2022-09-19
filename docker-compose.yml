@@ -7,9 +7,9 @@ version: '2'
 services:
 
   server:
-    image: szurubooru/server:latest
-    # build:
-    #   context: ./server
+    # image: szurubooru/server:latest
+    build:
+      context: ./server
     depends_on:
       - sql
     environment:

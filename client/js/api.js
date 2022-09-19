@@ -350,6 +350,27 @@ class Api extends events.EventTarget {
         return promise;
     }
 
+    // POST /generate/ endpoint with prompt as query param
+    _generate(prompt) {
+        let abortFunction = () => {};
+        let returnedPromise = new Promise((resolve, reject) => {
+            let uploadPromise = this._rawRequest(
+                "generate?prompt=" + prompt,
+                request.post,
+                {},
+                {},
+                {}
+            );
+            abortFunction = () => uploadPromise.abort();
+            return uploadPromise.then((response) => {
+                abortFunction = () => {};
+                return resolve(response.token);
+            }, reject);
+        });
+        returnedPromise.abort = () => abortFunction();
+        return returnedPromise;
+    }
+
     _upload(file, options) {
         let abortFunction = () => {};
         let returnedPromise = new Promise((resolve, reject) => {

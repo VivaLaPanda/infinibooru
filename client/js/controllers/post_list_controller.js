@@ -4,6 +4,8 @@ const router = require("../router.js");
 const api = require("../api.js");
 const settings = require("../models/settings.js");
 const uri = require("../util/uri.js");
+const Post = require("../models/post.js");
+const request = require("superagent");
 const PostList = require("../models/post_list.js");
 const topNavigation = require("../models/top_navigation.js");
 const PageController = require("../controllers/page_controller.js");
@@ -94,28 +96,50 @@ class PostListController {
     _evtGenerate(e) {
         prompt = this._ctx.parameters.query;
 
+        let abortFunction = () => {};
+
         if (prompt != null) {
             // Make json POST request to 207.178.107.94:21487/generate_image
             // with the prompt as the prompt query in the json body
             // The response is a jpeg image
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://207.178.107.94:21487/generate_image", true);
-            xhr.responseType = "blob";
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onload = function (e) {
-                if (this.status == 200) {
-                    // download the image
-                    var blob = this.response;
-                    var link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "image.jpg";
-                    link.click();
-                }
-            }
-            xhr.send(JSON.stringify({ prompt: prompt, num_samples: 1 }));
+            // Call the upload API with the prompt
+            // The response is a promise wrapping the token
 
+            // Optimize the prompt
+            var betterPrompt = prompt.replace(/ /g, '", "');
 
+            var data = {};
+            api._generate(betterPrompt).then((token) => {
+                // Make a post with that token
+                // Ideally this should live as some kind of method on post
+                // let post = new Post();
+                // post.safety = "unsafe";
+
+                data["safety"] = "unsafe";
+                data["contentToken"] = token;
+
+                // Split prompt into tags
+                var tags = prompt.split(" ");
+                data["tags"] = tags
+            })
+            .then(() => {
+                let requestPromise = api._rawRequest(
+                    uri.formatApiLink("posts"),
+                    request.post,
+                    data,
+                    {},
+                    {}
+                );
+                abortFunction = () => requestPromise.abort();
+                return requestPromise;
+            })
+            .then((post) => {
+                var newPost = Post.fromResponse(post)
+                newPost.save();
+
+                this._syncPageController();
+            })
         }
     }
 
