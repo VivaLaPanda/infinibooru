@@ -20,7 +20,7 @@ def genfile(
     prompt = ctx.get_param_as_string("prompt")
     num_samples = 1 # hardcode to 1 for now TODO: change
     # Generate the image
-    conn = http.client.HTTPConnection("24.65.87.40", 40025)
+    conn = http.client.HTTPConnection("24.65.87.40", 40088)
     payload = json.dumps({
         "prompt": prompt,
         "num_samples": num_samples

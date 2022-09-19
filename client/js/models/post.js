@@ -150,6 +150,11 @@ class Post extends events.EventTarget {
         return this._hasCustomThumbnail;
     }
 
+    get isGenerated() {
+        // return false by default
+        return this._isGenerated || false;
+    }
+
     set flags(value) {
         this._flags = value;
     }
@@ -172,6 +177,10 @@ class Post extends events.EventTarget {
 
     set source(value) {
         this._source = value;
+    }
+
+    set isGenerated(value) {
+        this._isGenerated = value;
     }
 
     static fromResponse(response) {
@@ -268,6 +277,13 @@ class Post extends events.EventTarget {
                 text: note.text,
             }));
         }
+
+        if (this._isGenerated) {
+            // Format tags by joining them with ", "
+            files.prompt = detail.tags.join(", ");
+            console.log("prompt", files.prompt);
+        }
+
         if (this._newContent) {
             files.content = this._newContent;
         }

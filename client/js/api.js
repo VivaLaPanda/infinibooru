@@ -297,24 +297,40 @@ class Api extends events.EventTarget {
         let abortFunction = () => {};
         let promise = Promise.resolve();
         if (files) {
-            for (let key of Object.keys(files)) {
-                const file = files[key];
-                const fileId = this._getFileId(file);
-                if (fileTokens[fileId]) {
-                    data[key + "Token"] = fileTokens[fileId];
-                } else {
-                    promise = promise
-                        .then(() => {
-                            let uploadPromise = this._upload(file);
-                            abortFunction = () => uploadPromise.abort();
-                            return uploadPromise;
-                        })
-                        .then((token) => {
-                            abortFunction = () => {};
-                            fileTokens[fileId] = token;
-                            data[key + "Token"] = token;
-                            return Promise.resolve();
-                        });
+            // If the prompt is set, we're generating not uploading
+            if (files["prompt"] != null) {
+                promise = promise
+                    .then(() => {
+                        let generatePromise = this._generate(files["prompt"]);
+                        abortFunction = () => generatePromise.abort();
+                        return generatePromise;
+                    })
+                    .then((token) => {
+                        abortFunction = () => {};
+                        data["contentToken"] = token;
+        
+                        return Promise.resolve();
+                    })
+            } else {
+                for (let key of Object.keys(files)) {
+                    const file = files[key];
+                    const fileId = this._getFileId(file);
+                    if (fileTokens[fileId]) {
+                        data[key + "Token"] = fileTokens[fileId];
+                    } else {
+                        promise = promise
+                            .then(() => {
+                                let uploadPromise = this._upload(file);
+                                abortFunction = () => uploadPromise.abort();
+                                return uploadPromise;
+                            })
+                            .then((token) => {
+                                abortFunction = () => {};
+                                fileTokens[fileId] = token;
+                                data[key + "Token"] = token;
+                                return Promise.resolve();
+                            });
+                    }
                 }
             }
         }

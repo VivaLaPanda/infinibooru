@@ -5,7 +5,7 @@ const api = require("../api.js");
 const settings = require("../models/settings.js");
 const uri = require("../util/uri.js");
 const Post = require("../models/post.js");
-const request = require("superagent");
+const Tag = require("../models/tag.js");
 const PostList = require("../models/post_list.js");
 const topNavigation = require("../models/top_navigation.js");
 const PageController = require("../controllers/page_controller.js");
@@ -96,48 +96,23 @@ class PostListController {
     _evtGenerate(e) {
         prompt = this._ctx.parameters.query;
 
-        let abortFunction = () => {};
-
         if (prompt != null) {
-            // Make json POST request to 207.178.107.94:21487/generate_image
-            // with the prompt as the prompt query in the json body
-            // The response is a jpeg image
+            var post = new Post();
+            
+            post.isGenerated = true;
+            post.safety = "unsafe"; // safe, sketchy, unsafe
+            var tagsList = prompt.split(" ");
 
-            // Call the upload API with the prompt
-            // The response is a promise wrapping the token
+            for (let tagName of tagsList) {
+                const tag = new Tag();
+                tag.names = [tagName];
+                post.tags.add(tag);
+            }
 
-            // Optimize the prompt
-            var betterPrompt = prompt.replace(/ /g, '", "');
-
-            var data = {};
-            api._generate(betterPrompt).then((token) => {
-                // Make a post with that token
-                // Ideally this should live as some kind of method on post
-                // let post = new Post();
-                // post.safety = "unsafe";
-
-                data["safety"] = "unsafe";
-                data["contentToken"] = token;
-
-                // Split prompt into tags
-                var tags = prompt.split(" ");
-                data["tags"] = tags
-            })
+            let savePromise = post.save()
             .then(() => {
-                let requestPromise = api._rawRequest(
-                    uri.formatApiLink("posts"),
-                    request.post,
-                    data,
-                    {},
-                    {}
-                );
-                abortFunction = () => requestPromise.abort();
-                return requestPromise;
-            })
-            .then((post) => {
-                var newPost = Post.fromResponse(post)
-                newPost.save();
-
+                // If the post is being uploaded anonymously, we need to
+                // refresh the page to show the new post.
                 this._syncPageController();
             })
         }
