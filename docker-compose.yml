@@ -7,9 +7,9 @@ version: '2'
 services:
 
   server:
-    # image: szurubooru/server:latest
-    build:
-      context: ./server
+    image: vivalapanda/infinibooru-server:latest
+    # build:
+    #   context: ./server
     depends_on:
       - sql
     environment:
@@ -29,9 +29,9 @@ services:
       - "./server/config.yaml:/opt/app/config.yaml"
 
   client:
-    #image: szurubooru/client:dev
-    build:
-      context: ./client
+    image: vivalapanda/infinibooru-client:latest
+    # build:
+    #   context: ./client
     depends_on:
       - server
     environment:
