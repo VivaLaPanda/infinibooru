@@ -1,11 +1,12 @@
 from typing import Dict
+import logging
+import requests
 
 from szurubooru import rest
 from szurubooru.func import auth, file_uploads
 
-import http.client
-import json
-
+import replicate
+logger = logging.getLogger(__name__)
 
 @rest.routes.post("/generate")
 def genfile(
@@ -13,24 +14,19 @@ def genfile(
 ) -> rest.Response:
     auth.verify_privilege(ctx.user, "uploads:create")
 
-    # Lock so that we're only ever generating one image at a time
-    
-
     # Get the prompt from the request
     prompt = ctx.get_param_as_string("prompt")
     num_samples = 1 # hardcode to 1 for now TODO: change
+
     # Generate the image
-    conn = http.client.HTTPConnection("24.65.87.40", 40088)
-    payload = json.dumps({
-        "prompt": prompt,
-        "num_samples": num_samples
-    })
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    conn.request("POST", "/generate_image", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
+    model = replicate.models.get("cjwbw/waifu-diffusion")
+    output = model.predict(prompt=prompt)[0] # We only allow generating one, so just 0-index
+
+    # The output is a url to the image on replicate e.g. 'https://replicate.com/api/models/cjwbw/waifu-diffusion/files/ba595ffd-8d93-4936-875b-caf8f4d09688/out-0.png'
+    # Download it using requests
+    r = requests.get(output, allow_redirects=True)
+    # Get the bytes from the response as "data"
+    data = r.content
 
     token = file_uploads.save(data)
     return {"token": token}

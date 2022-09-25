@@ -24,6 +24,8 @@ services:
       #POSTGRES_PORT: 5432
       #LOG_SQL: 0 (1 for verbose SQL logs)
       THREADS:
+      # Replicate API token
+      REPLICATE_API_TOKEN: 
     volumes:
       - "${MOUNT_DATA}:/data"
       - "./server/config.yaml:/opt/app/config.yaml"
