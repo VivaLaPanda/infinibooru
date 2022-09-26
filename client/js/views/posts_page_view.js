@@ -46,6 +46,12 @@ class PostsPageView extends events.EventTarget {
             generateButton.addEventListener("click", (e) =>
                 this._evtGenerateClick(e)
             );
+
+            // Disable the generate button if there is no query
+            console.log(ctx)
+            if (ctx.response.query === "") {
+                generateButton.disabled = true;
+            }
         }
 
         this._syncBulkEditorsHighlights();

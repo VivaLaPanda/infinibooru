@@ -1,7 +1,7 @@
 from typing import Dict
 import re
 
-from szurubooru import rest, config
+from szurubooru import rest
 from szurubooru.func import auth, file_uploads
 
 import http
