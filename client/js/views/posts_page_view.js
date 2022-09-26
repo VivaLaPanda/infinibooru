@@ -49,7 +49,7 @@ class PostsPageView extends events.EventTarget {
 
             // Disable the generate button if there is no query or if the user isn't logged in 
             // TODO: fix this, rn it's a weird proxy for "is the user logged in"
-            if (ctx.response.query === "" || !ctx.canBulkEditSafety) {
+            if (ctx.response.query === "") {
                 generateButton.disabled = true;
             }
         }
