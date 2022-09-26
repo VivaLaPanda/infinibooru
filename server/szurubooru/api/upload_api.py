@@ -1,13 +1,12 @@
 from typing import Dict
-import logging
-import requests
 import re
 
-from szurubooru import rest
+from szurubooru import rest, config
 from szurubooru.func import auth, file_uploads
 
-import replicate
-logger = logging.getLogger(__name__)
+import http
+import json
+import os
 
 @rest.routes.post("/generate")
 def genfile(
@@ -25,17 +24,20 @@ def genfile(
     prompt = re.sub(r"-rating:\S+", "", prompt)
 
     # Generate the image
-    model = replicate.models.get("cjwbw/waifu-diffusion")
-    output = model.predict(prompt=prompt)[0] # We only allow generating one, so just 0-index
-
-    # Fix faces
-    # TODO: can't find a good model for anime images
-
-    # The output is a url to the image on replicate e.g. 'https://replicate.com/api/models/cjwbw/waifu-diffusion/files/ba595ffd-8d93-4936-875b-caf8f4d09688/out-0.png'
-    # Download it using requests
-    r = requests.get(output, allow_redirects=True)
-    # Get the bytes from the response as "data"
-    data = r.content
+    # Get the worker url and port from the env variables
+    worker_url = os.getenv("WORKER_URL")
+    worker_port = os.getenv("WORKER_PORT")
+    conn = http.client.HTTPConnection(worker_url, worker_port)
+    payload = json.dumps({
+        "prompt": prompt,
+        "num_samples": num_samples
+    })
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    conn.request("POST", "/generate_image", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
 
     token = file_uploads.save(data)
     return {"token": token}

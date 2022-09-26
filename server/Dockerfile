@@ -32,7 +32,6 @@ RUN apk --no-cache add \
         "heif-image-plugin>=0.3.2" \
         youtube_dl \
         "pillow-avif-plugin>=1.1.0" \
-        replicate \
  && apk --no-cache del py3-pip
 
 COPY ./ /opt/app/
@@ -85,9 +84,13 @@ ARG PORT=6666
 ENV PORT=${PORT}
 EXPOSE ${PORT}
 
-ARG REPLICATE_API_TOKEN=6666
-ENV REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
-EXPOSE ${REPLICATE_API_TOKEN}
+ARG WORKER_URL=6666
+ENV WORKER_URL=${WORKER_URL}
+EXPOSE ${WORKER_URL}
+
+ARG WORKER_PORT=10221
+ENV WORKER_PORT=${WORKER_PORT}
+EXPOSE ${WORKER_PORT}
 
 ARG THREADS=4
 ENV THREADS=${THREADS}
