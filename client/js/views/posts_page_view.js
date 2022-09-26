@@ -48,7 +48,6 @@ class PostsPageView extends events.EventTarget {
             );
 
             // Disable the generate button if there is no query
-            console.log(ctx)
             if (ctx.response.query === "") {
                 generateButton.disabled = true;
             }
