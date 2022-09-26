@@ -9,6 +9,7 @@ const NoteList = require("./note_list.js");
 const CommentList = require("./comment_list.js");
 const PoolList = require("./pool_list.js");
 const Pool = require("./pool.js");
+const settings = require("./settings.js");
 const misc = require("../util/misc.js");
 
 class Post extends events.EventTarget {
@@ -261,6 +262,16 @@ class Post extends events.EventTarget {
         }
         if (this._safety !== this._orig._safety) {
             detail.safety = this._safety;
+
+            // If the post is generated, pick a safety at random
+            if (this._isGenerated) {
+                const browsingSettings = settings.get();
+                // browsingSettings.listPosts contains a list of k:vs like "safe": true
+                const safetySettings = Object.keys(browsingSettings.listPosts).filter(
+                    (key) => browsingSettings.listPosts[key] === true
+                );
+                detail.safety = safetySettings[Math.floor(Math.random() * safetySettings.length)];
+            }
         }
         if (misc.arraysDiffer(this._flags, this._orig._flags)) {
             detail.flags = this._flags;
@@ -281,6 +292,15 @@ class Post extends events.EventTarget {
         if (this._isGenerated) {
             // Format tags by joining them with ", "
             files.prompt = detail.tags.join(", ");
+
+            // replace safe/sketchy/unsafe with general/questionable/explicit in safety
+            var safetyTag = detail.safety.replace("unsafe", "explicit").replace("safe", "general").replace("sketchy", "questionable"); // order matters because of submatches
+            // add safety tag to prompt
+            files.prompt += ", " + safetyTag;
+
+            // add ", uploaded to Danbooru" to prompt
+            files.prompt += ", uploaded to Danbooru";
+
             console.log("prompt", files.prompt);
         }
 
