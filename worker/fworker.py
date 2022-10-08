@@ -18,7 +18,7 @@ def setup_model():
     device = "cuda"
 
     # Load model
-    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, revision='fp16', cache_dir=cache_dir)
+    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32, cache_dir=cache_dir)
     pipe = pipe.to(device)
 
     # Disable safety checker
@@ -49,7 +49,7 @@ def generate_image():
     # Generate the image
     # TODO: Add a timeout
     with autocast("cuda"):
-        images = pipe([prompt] * num_samples, guidance_scale=7.5)["sample"]
+        images = pipe([prompt] * num_samples, guidance_scale=7.5, )["sample"]
     
     # Images is a list of PIL images. Respond with am image binary instead
     image = images[0]
