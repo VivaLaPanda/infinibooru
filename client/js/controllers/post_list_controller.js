@@ -101,6 +101,11 @@ class PostListController {
             
             post.isGenerated = true;
             post.safety = "unsafe"; // safe, sketchy, unsafe
+            // Stripe right and left whitespace
+            prompt = prompt.trim();
+            // Replace multiple spaces with a single space
+            prompt = prompt.replace(/\s+/g, " ");
+
             var tagsList = prompt.split(" ");
 
             for (let tagName of tagsList) {

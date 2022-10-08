@@ -23,6 +23,9 @@ def genfile(
     # Do this by regexing for "-rating:\S+" and replacing with ""
     prompt = re.sub(r"-rating:\S+", "", prompt)
 
+    # Remove underscores from prompt
+    prompt = prompt.replace("_", " ")
+
     # Generate the image
     # Get the worker url and port from the env variables
     worker_url = os.getenv("WORKER_URL")
