@@ -46,6 +46,12 @@ class PostsPageView extends events.EventTarget {
             generateButton.addEventListener("click", (e) =>
                 this._evtGenerateClick(e)
             );
+
+            // Disable the generate button if there is no query or if the user isn't logged in 
+            // TODO: fix this, rn it's a weird proxy for "is the user logged in"
+            if (ctx.response.query === "") {
+                generateButton.disabled = true;
+            }
         }
 
         this._syncBulkEditorsHighlights();

@@ -1,11 +1,12 @@
 from typing import Dict
+import re
 
 from szurubooru import rest
 from szurubooru.func import auth, file_uploads
 
-import http.client
+import http
 import json
-
+import os
 
 @rest.routes.post("/generate")
 def genfile(
@@ -13,14 +14,20 @@ def genfile(
 ) -> rest.Response:
     auth.verify_privilege(ctx.user, "uploads:create")
 
-    # Lock so that we're only ever generating one image at a time
-    
-
     # Get the prompt from the request
     prompt = ctx.get_param_as_string("prompt")
     num_samples = 1 # hardcode to 1 for now TODO: change
+
+    # Strip any negative rating queries if they exist
+    # i.e. "-rating:safe,questionable,etc"
+    # Do this by regexing for "-rating:\S+" and replacing with ""
+    prompt = re.sub(r"-rating:\S+", "", prompt)
+
     # Generate the image
-    conn = http.client.HTTPConnection("24.65.87.40", 40088)
+    # Get the worker url and port from the env variables
+    worker_url = os.getenv("WORKER_URL")
+    worker_port = os.getenv("WORKER_PORT")
+    conn = http.client.HTTPConnection(worker_url, worker_port)
     payload = json.dumps({
         "prompt": prompt,
         "num_samples": num_samples

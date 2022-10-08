@@ -24,6 +24,7 @@ RUN apk --no-cache add \
         py3-pynacl \
         py3-tz \
         py3-pyrfc3339 \
+        py3-requests \
  && pip3 install --no-cache-dir --disable-pip-version-check \
         "alembic>=0.8.5" \
         "coloredlogs==5.0" \
@@ -82,6 +83,14 @@ CMD ["/opt/app/docker-start.sh"]
 ARG PORT=6666
 ENV PORT=${PORT}
 EXPOSE ${PORT}
+
+ARG WORKER_URL=6666
+ENV WORKER_URL=${WORKER_URL}
+EXPOSE ${WORKER_URL}
+
+ARG WORKER_PORT=10221
+ENV WORKER_PORT=${WORKER_PORT}
+EXPOSE ${WORKER_PORT}
 
 ARG THREADS=4
 ENV THREADS=${THREADS}

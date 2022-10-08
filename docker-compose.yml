@@ -7,9 +7,9 @@ version: '2'
 services:
 
   server:
-    image: vivalapanda/infinibooru-server:latest
-    # build:
-    #   context: ./server
+    # image: vivalapanda/infinibooru-server:latest
+    build:
+      context: ./server
     depends_on:
       - sql
     environment:
@@ -24,14 +24,17 @@ services:
       #POSTGRES_PORT: 5432
       #LOG_SQL: 0 (1 for verbose SQL logs)
       THREADS:
+      
+      WORKER_URL: 
+      WORKER_PORT:
     volumes:
       - "${MOUNT_DATA}:/data"
       - "./server/config.yaml:/opt/app/config.yaml"
 
   client:
-    image: vivalapanda/infinibooru-client:latest
-    # build:
-    #   context: ./client
+    # image: vivalapanda/infinibooru-client:latest
+    build:
+      context: ./client
     depends_on:
       - server
     environment:
