@@ -3,6 +3,8 @@ from io import BytesIO
 import json
 import os
 import torch
+import time
+import random
 from torch import autocast
 from diffusers import StableDiffusionPipeline
 from flask import Flask, request
@@ -32,8 +34,20 @@ def setup_model():
 # Store pipe as a global variable
 pipe = setup_model()
 
+# Record whether something is being generated
+generating = False
+
 @app.route('/generate_image', methods=['POST'])
 def generate_image():
+    global generating
+    
+    # Check if something is already being generated
+    # If so, wait a random interval between 100 and 1000 ms and try again
+    if generating:
+        time.sleep(random.randint(100, 1000) / 1000)
+        return generate_image()
+
+    generating = True
     # Parse the JSON message
     message = request.get_json()
     print("Received message: %s" % message)
@@ -56,6 +70,9 @@ def generate_image():
     buffered = BytesIO()
     image.save(buffered, format="JPEG")
     # image_string = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    # Record we're done generating
+    generating = False
 
     # Send the images back to the client
     return buffered.getvalue()
