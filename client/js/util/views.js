@@ -194,6 +194,18 @@ function getPostEditUrl(id, parameters) {
     );
 }
 
+function getTagSearch(tags, parameters) {
+    // tags is a list of tag objects
+    // map to a list of names
+    const tagNames = tags._list.map((tag) => tag._origName);
+    var tagQuery = tagNames.join(" ");
+
+    return uri.formatClientLink(
+        "posts",
+        { query: tagQuery }
+    );
+}
+
 function makePostLink(id, includeHash) {
     let text = id;
     if (includeHash) {
@@ -432,6 +444,7 @@ function getTemplate(templatePath) {
         Object.assign(ctx, {
             getPostUrl: getPostUrl,
             getPostEditUrl: getPostEditUrl,
+            getTagSearch: getTagSearch,
             makeRelativeTime: makeRelativeTime,
             makeFileSize: makeFileSize,
             makeMarkdown: makeMarkdown,

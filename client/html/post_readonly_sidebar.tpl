@@ -114,5 +114,6 @@
                 <% } %>
             </p>
         <% } %>
+        <a href='<%= ctx.getTagSearch(ctx.post.tags, ctx.parameters) %>'>Search these tags</a>
     </nav>
 </div>

@@ -145,6 +145,7 @@ class PostListController {
             pageRenderer: (pageCtx) => {
                 Object.assign(pageCtx, {
                     canViewPosts: api.hasPrivilege("posts:view"),
+                    canUpload: api.hasPrivilege("posts:create"),
                     canBulkEditTags: api.hasPrivilege("posts:bulk-edit:tags"),
                     canBulkEditSafety: api.hasPrivilege(
                         "posts:bulk-edit:safety"

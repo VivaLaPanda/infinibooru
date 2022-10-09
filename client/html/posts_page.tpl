@@ -58,7 +58,13 @@
     <% } %>
     <div>
         <h2>
-            <input type="button" value="Make More" class="generate" />
+            <% if (ctx.response.query.length > 0) { %>
+                <% if (ctx.canUpload) { %>
+                    <input type="button" value="Make More" class="generate"/>
+                <% } else { %>
+                    <input type="button" value="Make More (must be logged in)" class="generate" disabled="true"/>
+                <% } %>
+            <% } %>
         </h2>
     </div>
 </div>
