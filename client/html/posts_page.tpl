@@ -58,7 +58,7 @@
     <% } %>
     <div>
         <h2>
-            <% if (ctx.response.query.length > 0) { %>
+            <% if (ctx.response.query.replace(/-[\w:,]*/g,"").length > 0) { %>
                 <% if (ctx.canUpload) { %>
                     <input type="button" value="Make More" class="generate"/>
                 <% } else { %>
