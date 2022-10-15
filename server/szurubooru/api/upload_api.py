@@ -11,7 +11,10 @@ import base64
 import sys
 
 def negative_prompt(rawprompt):
-    prompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+    prompt = "lowres, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+
+    if "futanari" not in prompt:
+        prompt = "bad anatomy, " + prompt
 
     if "1boy" in rawprompt:
         prompt = "breasts, large_breasts, pussy, " + prompt
