@@ -301,6 +301,8 @@ class Post extends events.EventTarget {
             // add ", uploaded to Danbooru" to prompt
             files.prompt += ", uploaded to Danbooru";
 
+            detail.source = prompt
+
             console.log("prompt", files.prompt);
         }
 

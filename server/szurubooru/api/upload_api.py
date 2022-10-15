@@ -24,6 +24,9 @@ def format_prompt(rawprompt):
     # Append "masterpiece, best quality, " to prompt
     prompt = "masterpiece, best quality, " + prompt
 
+    if "explicit" in rawprompt:
+        prompt = "NSFW, " + prompt
+
     return prompt
 
 def guessSize(prompt):
