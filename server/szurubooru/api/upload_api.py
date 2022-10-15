@@ -1,3 +1,4 @@
+from random import random
 from typing import Dict
 import re
 
@@ -10,6 +11,9 @@ import os
 import base64
 import sys
 
+
+multichar_regex = r"[2-6]\+*(boys)*(girls)*"
+
 def negative_prompt(rawprompt):
     prompt = "lowres, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
 
@@ -19,7 +23,7 @@ def negative_prompt(rawprompt):
     if "1boy" in rawprompt:
         prompt = "breasts, large_breasts, pussy, " + prompt
     
-    if "loli" in rawprompt:
+    if "loli" in rawprompt and "oppai" not in rawprompt:
         prompt = "large_breasts, medium_breasts, mature_woman, " + prompt
     
     if "shota" in rawprompt:
@@ -38,8 +42,7 @@ def negative_prompt(rawprompt):
             prompt = "1girl, " + prompt
     
     # match n-many boys or girls
-    regex = r"[2-6]\+*(boys)*(girls)*"
-    if re.search(regex, rawprompt):
+    if re.search(multichar_regex, rawprompt):
         prompt = "solo, " + prompt
     
     return prompt
@@ -82,6 +85,15 @@ def guessSize(prompt):
             "height": short,
             "width": long
         }
+
+    if re.search(multichar_regex, prompt):
+        # randomly chose portrait or landscape
+        if random.randint(0,1) == 1:
+            size = {
+                "height": short,
+                "width": long
+            }
+
     
     if "square" in prompt:
         size = {
