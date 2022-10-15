@@ -16,6 +16,17 @@ def negative_prompt(rawprompt):
     if "1boy" in rawprompt:
         prompt = "breasts, large_breasts, pussy, " + prompt
     
+    if "loli" in rawprompt:
+        prompt = "large_breasts, medium_breasts, mature_woman" + prompt
+    
+    if "1girl" in rawprompt and "1boy" in rawprompt:
+        prompt = "solo" + prompt
+    
+    # match n-many boys or girls
+    regex = r"[2-6]\+*(boys)*(girls)*"
+    if re.search(regex, rawprompt):
+        prompt = "solo" + prompt
+    
     return prompt
 
 def format_prompt(rawprompt):
@@ -32,6 +43,9 @@ def format_prompt(rawprompt):
 
     if "explicit" in rawprompt:
         prompt = "NSFW, " + prompt
+    
+    if "loli" in rawprompt or "shota" in rawprompt:
+        prompt += ", child"
 
     return prompt
 
@@ -48,7 +62,7 @@ def guessSize(prompt):
 
     # Check if prompt contains terms that indicate whether they want
     # portrait, landscape or square
-    if "landscape" in prompt or "wallpaper" in prompt:
+    if "landscape" in prompt:
         size = {
             "height": short,
             "width": long
@@ -60,7 +74,7 @@ def guessSize(prompt):
             "width": medium
         }
     
-    if "wide_image" in prompt:
+    if "wide_image" in prompt or "wallpaper" in prompt:
         size = {
             "height": short,
             "width": 1024
