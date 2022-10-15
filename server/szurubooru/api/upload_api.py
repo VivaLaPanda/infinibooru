@@ -10,7 +10,13 @@ import os
 import base64
 import sys
 
-negative_prompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+def negative_prompt(rawprompt):
+    prompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+
+    if "1boy" in rawprompt:
+        prompt = "breasts, large_breasts, pussy, " + prompt
+    
+    return prompt
 
 def format_prompt(rawprompt):
     # Strip any negative rating queries if they exist
@@ -75,6 +81,7 @@ def genfile(
 
     dimm = guessSize(prompt)
     prompt = format_prompt(prompt)
+    neg_prompt = negative_prompt(prompt)
 
     # Generate the image
     # Get the worker url and port from the env variables
@@ -93,7 +100,7 @@ def genfile(
         "sampler": "k_euler_ancestral",
         "scale": 12,
         "steps": 30,
-        "uc": negative_prompt,
+        "uc": neg_prompt,
         "ucPreset": 0,
         "width": dimm["width"],
         "height": dimm["height"]
