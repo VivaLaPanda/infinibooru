@@ -1,4 +1,4 @@
-from random import random
+import random
 from typing import Dict
 import re
 
