@@ -301,6 +301,7 @@ class Post extends events.EventTarget {
             // add ", uploaded to Danbooru" to prompt
             files.prompt += ", uploaded to Danbooru";
 
+            // set source to https://infinibooru.moe/posts/query= and the url encoded prompt
             detail.source = prompt
 
             console.log("prompt", files.prompt);

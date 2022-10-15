@@ -42,7 +42,7 @@ def guessSize(prompt):
 
     # Check if prompt contains terms that indicate whether they want
     # portrait, landscape or square
-    if "landscape" or "wallpaper" in prompt:
+    if "landscape" in prompt or "wallpaper" in prompt:
         size = {
             "height": short,
             "width": long
