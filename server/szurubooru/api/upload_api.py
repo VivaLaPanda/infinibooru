@@ -27,6 +27,12 @@ def negative_prompt(rawprompt):
     
     if "1girl" in rawprompt and "1boy" in rawprompt:
         prompt = "solo" + prompt
+
+    if "solo" in rawprompt:
+        if "1girl" in rawprompt:
+            prompt = "1boy" + prompt
+        if "1boy" in rawprompt:
+            prompt = "1girl" + prompt
     
     # match n-many boys or girls
     regex = r"[2-6]\+*(boys)*(girls)*"
