@@ -1,16 +1,22 @@
-FROM runpod/pytorch:latest as diffusers-worker
+FROM runpod/stack:latest as diffusers-worker
 
-RUN pip3 install -U git+https://github.com/huggingface/diffusers.git
-RUN pip3 install transformers scipy ftfy
+# Set /workspace as the pwd
+WORKDIR /workspace
 
-# RUN pip install transformers gradio scipy ftfy "ipywidgets>=7,<8"
-RUN pip3 install websocket-server flask
+# Get https://github.com/VivaLaPanda/naifu/archive/refs/heads/master.zip
+# and place the file in ./naifu
+ADD https://github.com/VivaLaPanda/naifu/archive/refs/heads/master.zip /tmp/naifu.zip
+RUN tar -xJf /tmp/naifu.zip -C /tmp && \
+    mv /tmp/naifu-master /workspace/naifu \
+    rm /tmp/naifu.zip
 
-# Make sure that port is exposed for websockets
-ARG PORT=9001
-ENV PORT=${PORT}
-EXPOSE ${PORT}
+# Get http://143.110.234.53/models/naifumodels.tar.gz and put it in ./naifu/models
+ADD http://143.110.234.53/models/naifumodels.tar.gz /tmp/naifumodels.tar.gz
+RUN tar -xJf /tmp/naifumodels.tar.gz -C /tmp && \
+    mv /tmp/naifumodels /workspace/naifu/models \
+    rm /tmp/naifumodels.tar.gz
 
-# Download fworker and run it
-# wget https://raw.githubusercontent.com/VivaLaPanda/infinibooru/stable-diffusion/worker/fworker.py && python3 fworker.py
-CMD ["/bin/bash", "-c", "wget https://raw.githubusercontent.com/VivaLaPanda/infinibooru/stable-diffusion/worker/fworker.py && python3 fworker.py"]
+# Run the setup script (/workspace/naifu/setup.sh)
+RUN /workspace/naifu/setup.sh
+
+RUN /workspace/naufu/run.sh

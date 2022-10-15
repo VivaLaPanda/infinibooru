@@ -7,6 +7,58 @@ from szurubooru.func import auth, file_uploads
 import http
 import json
 import os
+import base64
+import sys
+
+negative_prompt = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+
+def format_prompt(rawprompt):
+    # Strip any negative rating queries if they exist
+    # i.e. "-rating:safe,questionable,etc"
+    # Do this by regexing for "-rating:\S+" and replacing with ""
+    prompt = re.sub(r"-rating:\S+", "", rawprompt)
+
+    # Remove underscores from prompt
+    prompt = prompt.replace("_", " ")
+
+    # Append "masterpiece, best quality, " to prompt
+    prompt = "masterpiece, best quality, " + prompt
+
+    return prompt
+
+def guessSize(prompt):
+    long = 768
+    medium = 640
+    short = 512
+    # Guess size of image based on prompt
+    # set the default
+    size = {
+        "height": long,
+        "width": short
+    }
+
+    # Check if prompt contains terms that indicate whether they want
+    # portrait, landscape or square
+    if "landscape" or "wallpaper" in prompt:
+        size = {
+            "height": short,
+            "width": long
+        }
+    
+    if "square" in prompt:
+        size = {
+            "height": medium,
+            "width": medium
+        }
+    
+    if "wide_image" in prompt:
+        size = {
+            "height": short,
+            "width": 1024
+        }
+
+    return size
+
 
 @rest.routes.post("/generate")
 def genfile(
@@ -18,31 +70,75 @@ def genfile(
     prompt = ctx.get_param_as_string("prompt")
     num_samples = 1 # hardcode to 1 for now TODO: change
 
-    # Strip any negative rating queries if they exist
-    # i.e. "-rating:safe,questionable,etc"
-    # Do this by regexing for "-rating:\S+" and replacing with ""
-    prompt = re.sub(r"-rating:\S+", "", prompt)
-
-    # Remove underscores from prompt
-    prompt = prompt.replace("_", " ")
+    dimm = guessSize(prompt)
+    prompt = format_prompt(prompt)
 
     # Generate the image
     # Get the worker url and port from the env variables
     worker_url = os.getenv("WORKER_URL")
     worker_port = os.getenv("WORKER_PORT")
     conn = http.client.HTTPConnection(worker_url, worker_port)
+#     curl 'http://81.82.209.54:10002/generate-stream' \
+#   -H 'Connection: keep-alive' \
+#   -H 'Content-Type: application/json' \
+#   --data-raw '{"prompt":"masterpiece, best quality, 1girl, daiwa scarlet (umamusume), umamusume, tiara, horse ears, horse girl, horse tail, jewelry, large breasts, adjusting dress, animal ears, bangs, bare arms, blush, bracelet, breasts, brown hair, choker, cleavage, covered navel, cowboy shot, dress, hair between eyes, hair intakes, hair over shoulder, long hair, nail polish, necklace, red choker, red dress, red eyes, red nails, skindentation, solo, tail, thighhighs, thighs, very long hair","width":512,"height":768,"scale":12,"sampler":"k_euler_ancestral","steps":28,"seed":480161451,"n_samples":1,"ucPreset":0,"uc":"lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"}' \
+#   --insecure
+
     payload = json.dumps({
         "prompt": prompt,
-        "num_samples": num_samples
+        "n_samples": num_samples,
+        "sampler": "k_euler_ancestral",
+        "scale": 12,
+        "steps": 30,
+        "uc": negative_prompt,
+        "ucPreset": 0,
+        "width": dimm["width"],
+        "height": dimm["height"]
     })
+    print(payload, file=sys.stderr)
+
     headers = {
         'Content-Type': 'application/json'
     }
-    conn.request("POST", "/generate_image", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
+    conn.request("POST", "/generate-stream", payload, headers)
+    # Response is an eventstream
+    # Get the first "newImage" event and get the data content
+    event = {}
+    with conn.getresponse() as response:
+        # check resp code is ok
+        if not response.status == 200:
+            print(response.read()[:200], file=sys.stderr)
+            raise Exception("Error generating image")
 
-    token = file_uploads.save(data)
+        while not response.closed:
+            for line in response:
+                line = line.decode('UTF-8')
+                # print line to stderr
+                if line == '\r\n':
+                    # End of event.
+                    response.close()
+                    break
+                elif line.startswith(':'):
+                    # Comment, ignore.
+                    pass
+                else:
+                    # Data line.
+                    try:
+                        key, value = line.split(':', 1)
+                        value = value.strip()
+                        if key == 'data':
+                            event[key] = value
+                    except:
+                        # we're done, close the resp
+                        response.close()
+                        break
+
+    # get the newImage event
+    base64Image = event["data"]
+    # Decode the base64 image into binary byes
+    binaryImage = base64.b64decode(base64Image)
+
+    token = file_uploads.save(binaryImage)
     return {"token": token}
 
 @rest.routes.post("/uploads/?")
