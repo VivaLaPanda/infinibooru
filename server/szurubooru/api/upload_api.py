@@ -20,7 +20,7 @@ def negative_prompt(rawprompt):
         prompt = "large_breasts, medium_breasts, mature_woman" + prompt
     
     if "shota" in rawprompt:
-        prompt = "mature_male, stubble, muscular_male"
+        prompt = "mature_male, stubble, muscular_male" + prompt
     
     if "1girl" in rawprompt and "1boy" in rawprompt:
         prompt = "solo" + prompt
