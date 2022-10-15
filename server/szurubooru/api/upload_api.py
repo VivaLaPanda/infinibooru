@@ -20,24 +20,27 @@ def negative_prompt(rawprompt):
         prompt = "breasts, large_breasts, pussy, " + prompt
     
     if "loli" in rawprompt:
-        prompt = "large_breasts, medium_breasts, mature_woman" + prompt
+        prompt = "large_breasts, medium_breasts, mature_woman, " + prompt
     
     if "shota" in rawprompt:
-        prompt = "mature_male, stubble, muscular_male" + prompt
+        prompt = "mature_male, stubble, muscular_male, " + prompt
     
     if "1girl" in rawprompt and "1boy" in rawprompt:
-        prompt = "solo" + prompt
+        prompt = "solo, " + prompt
+    
+    if "boy" not in rawprompt and "futanari" not in rawprompt:
+        prompt = "penis, " + prompt
 
     if "solo" in rawprompt:
         if "1girl" in rawprompt:
-            prompt = "1boy" + prompt
+            prompt = "1boy, " + prompt
         if "1boy" in rawprompt:
-            prompt = "1girl" + prompt
+            prompt = "1girl, " + prompt
     
     # match n-many boys or girls
     regex = r"[2-6]\+*(boys)*(girls)*"
     if re.search(regex, rawprompt):
-        prompt = "solo" + prompt
+        prompt = "solo, " + prompt
     
     return prompt
 
