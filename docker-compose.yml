@@ -27,6 +27,7 @@ services:
       
       WORKER_URL: 
       WORKER_PORT:
+      REPLICATE_API_TOKEN:
     volumes:
       - "${MOUNT_DATA}:/data"
       - "./server/config.yaml:/opt/app/config.yaml"

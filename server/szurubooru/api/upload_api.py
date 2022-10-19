@@ -5,12 +5,14 @@ import re
 from szurubooru import rest
 from szurubooru.func import auth, file_uploads
 
+import io
 import http
 import json
 import os
 import base64
 import sys
 
+import replicate
 
 multichar_regex = r"[2-6]\+*(boys)*(girls)*"
 
@@ -110,6 +112,8 @@ def guessSize(prompt):
     return size
 
 
+upscale_model = replicate.models.get("nightmareai/real-esrgan")
+
 @rest.routes.post("/generate")
 def genfile(
     ctx: rest.Context, _params: Dict[str, str] = {}
@@ -140,7 +144,7 @@ def genfile(
         "n_samples": num_samples,
         "sampler": "k_euler_ancestral",
         "scale": 12,
-        "steps": 30,
+        "steps": 28,
         "uc": neg_prompt,
         "ucPreset": 0,
         "width": dimm["width"],
@@ -188,6 +192,28 @@ def genfile(
     base64Image = event["data"]
     # Decode the base64 image into binary byes
     binaryImage = base64.b64decode(base64Image)
+
+    # Upscale the image
+    stream = io.BytesIO(binaryImage)
+    url = upscale_model.predict(image=stream)
+    
+    # Url is formatted https://replicate.delivery/pbxt/eCRMbDjx70xmFCa0B6QTnWdXA3avlxf6UozYmroIeweeyJ6eD/output.png
+    # We need to extract the hostname and the path
+    hostname = url.split("/")[2]
+    print(hostname, file=sys.stderr)
+    path = "/".join(url.split("/")[3:])
+    print(path, file=sys.stderr)
+    # Get the image from the url using https
+    conn = http.client.HTTPSConnection(hostname)
+    conn.request("GET", "/" + path)
+    with conn.getresponse() as response:
+        # check resp code is ok
+        if not response.status == 200:
+            print(response.read()[:200], file=sys.stderr)
+            raise Exception("Error upscaling image")
+
+        # Read the image
+        binaryImage = response.read()
 
     token = file_uploads.save(binaryImage)
     return {"token": token}
