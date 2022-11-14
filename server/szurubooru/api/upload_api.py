@@ -34,6 +34,9 @@ def negative_prompt(rawprompt):
     if "1girl" in rawprompt and "1boy" in rawprompt:
         prompt = "solo, " + prompt
     
+    if "1boy" in rawprompt and "otoko_no_ko" in rawprompt:
+        prompt = "muscular_male, " + prompt
+    
     if "boy" not in rawprompt and "futanari" not in rawprompt:
         prompt = "penis, " + prompt
 

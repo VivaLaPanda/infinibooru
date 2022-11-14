@@ -5,8 +5,8 @@ WORKDIR /workspace
 
 # Get https://github.com/VivaLaPanda/naifu/archive/refs/heads/master.zip
 # and place the file in ./naifu
-ADD https://github.com/VivaLaPanda/naifu/archive/refs/heads/master.zip /tmp/naifu.zip
-RUN tar -xJf /tmp/naifu.zip -C /tmp && \
+ADD https://github.com/VivaLaPanda/naifu/archive/refs/heads/master.tar.gz /tmp/naifu.tar.gz
+RUN tar -xJf /tmp/naifu.tar.gz-C /tmp && \
     mv /tmp/naifu-master /workspace/naifu \
     rm /tmp/naifu.zip
 
